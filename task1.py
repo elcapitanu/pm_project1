@@ -58,29 +58,23 @@ for i in range(len(data)):
     r2 = data[i,8]
     psi2 = data[i,9]
 
-    theta_new = normalize_rad(state[2] + w * dt)
+    state[2] = normalize_rad(state[2] + w * dt)
 
-    vx = v * np.cos(theta_new)
-    vy = v * np.sin(theta_new)
+    state[0] = state[0] + v * np.cos(state[2]) * dt
+    state[1] = state[1] + v * np.sin(state[2]) * dt
 
-    x_new = state[0] + vx * dt
-    y_new = state[1] + vy * dt
+    x_pred.append(state[0])
+    y_pred.append(state[1])
+    theta_pred.append(state[2])
 
-    phi1 = normalize_rad(psi1+theta_new-np.pi/2)
-    phi2 = normalize_rad(psi2+theta_new-np.pi/2)
+    phi1 = normalize_rad(psi1+state[2]-np.pi/2)
+    phi2 = normalize_rad(psi2+state[2]-np.pi/2)
 
     x1_pred.append(l1[0] + r1 * np.sin(phi1))
     y1_pred.append(l1[1] - r1 * np.cos(phi1))
 
     x2_pred.append(l2[0] + r2 * np.sin(phi2))
     y2_pred.append(l2[1] - r2 * np.cos(phi2))
-
-    state = np.array([x_new, y_new, theta_new])
-    
-    x_pred.append(state[0])
-    y_pred.append(state[1])
-    theta_pred.append(state[2])    
-    
 
 plt.scatter(data[:,0], x_pred, marker='o', color='red', label='x_pred')
 plt.scatter(data[:,0], data[:, 1], marker='o', color='blue', label='x_real')
