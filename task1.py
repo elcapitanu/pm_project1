@@ -2,6 +2,13 @@ import numpy as np
 import re
 import matplotlib.pyplot as plt
 
+def normalize_rad(r):
+    if r > np.pi:
+        r -= 2 * np.pi
+    elif r < -np.pi:
+        r += 2 * np.pi
+    return r
+
 file_path = "./data/data1.txt"
 
 df = []
@@ -34,6 +41,12 @@ x_pred = []
 y_pred = []
 theta_pred = []
 
+x1_pred = []
+y1_pred = []
+
+x2_pred = []
+y2_pred = []
+
 state = np.array([x0, y0, theta0])
 
 for i in range(len(data)):
@@ -45,11 +58,7 @@ for i in range(len(data)):
     r2 = data[i,8]
     psi2 = data[i,9]
 
-    theta_new = state[2] + w * dt
-    if (theta_new > np.pi):
-        theta_new -= 2 * np.pi
-    elif (theta_new < -np.pi):
-        theta_new += 2 * np.pi
+    theta_new = normalize_rad(state[2] + w * dt)
 
     vx = v * np.cos(theta_new)
     vy = v * np.sin(theta_new)
@@ -57,11 +66,20 @@ for i in range(len(data)):
     x_new = state[0] + vx * dt
     y_new = state[1] + vy * dt
 
+    phi1 = normalize_rad(psi1+theta_new-np.pi/2)
+    phi2 = normalize_rad(psi2+theta_new-np.pi/2)
+
+    x1_pred.append(l1[0] + r1 * np.sin(phi1))
+    y1_pred.append(l1[1] - r1 * np.cos(phi1))
+
+    x2_pred.append(l2[0] + r2 * np.sin(phi2))
+    y2_pred.append(l2[1] - r2 * np.cos(phi2))
+
     state = np.array([x_new, y_new, theta_new])
     
     x_pred.append(state[0])
     y_pred.append(state[1])
-    theta_pred.append(state[2])
+    theta_pred.append(state[2])    
     
 
 plt.scatter(data[:,0], x_pred, marker='o', color='red', label='x_pred')
@@ -78,4 +96,7 @@ plt.show()
 
 plt.scatter(x_pred, y_pred, marker='.', color='red', label='pred')
 plt.scatter(data[:,1], data[:, 2], marker='.', color='blue', label='real')
+plt.scatter(x1_pred, y1_pred, marker='.', color='cyan', label='pred1')
+plt.scatter(x2_pred, y2_pred, marker='.', color='green', label='pred2')
+plt.legend()
 plt.show()
