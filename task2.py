@@ -78,8 +78,8 @@ def step(dst_1, bear_1, dst_2, bear_2, x, y, theta, beacon_1, beacon_2):
                                     (y-b1_y)/norm,
                                     0]]), axis=0)
 
-        H = np.append(H, np.array([[(b1_y-y)/(norm**2),
-                                    (b1_x-x)/(norm**2),
+        H = np.append(H, np.array([[-(y-b1_y)/(norm**2),
+                                    (x-b1_x)/(norm**2),
                                     -1]]), axis=0)
 
         h = np.append(h, np.array([[norm,
@@ -95,8 +95,8 @@ def step(dst_1, bear_1, dst_2, bear_2, x, y, theta, beacon_1, beacon_2):
                                     (y-b2_y)/norm,
                                     0]]), axis=0)
 
-        H = np.append(H, np.array([[(b2_y-y)/(norm**2),
-                                    (b2_x-x)/(norm**2),
+        H = np.append(H, np.array([[-(y-b2_y)/(norm**2),
+                                    (x-b2_x)/(norm**2),
                                     -1]]), axis=0)
 
         h = np.append(h, np.array([[norm,
