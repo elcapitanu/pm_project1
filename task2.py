@@ -73,7 +73,7 @@ def step(dst_1, bear_1, dst_2, bear_2, x, y, theta, beacon_1, beacon_2):
         z = np.append(z, np.array([[dst_1, bear_1]]))
         R = np.append(R, np.array([sigma_distance**2, sigma_bearing**2]))
 
-        norm = np.sqrt((x-b1_x)**2 + (y-b1_x)**2)
+        norm = np.sqrt((x-b1_x)**2 + (y-b1_y)**2)
         H = np.append(H, np.array([[(x-b1_x)/norm,
                                     (y-b1_y)/norm,
                                     0]]), axis=0)
