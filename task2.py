@@ -1,9 +1,6 @@
-from math import asin
 import numpy as np
 import matplotlib.pyplot as plt
-from pyrsistent import b
-from sklearn.metrics import balanced_accuracy_score
-from zmq import PROBE_ROUTER
+
 
 data = np.loadtxt("data/data2.txt")
 

@@ -1,9 +1,6 @@
-from math import asin
 import numpy as np
 import matplotlib.pyplot as plt
-from pyrsistent import b
-from sklearn.metrics import balanced_accuracy_score
-from zmq import PROBE_ROUTER
+
 
 data = np.loadtxt("data/data3.txt")
 
@@ -67,13 +64,8 @@ def getBeacon(state, b1, b2, distance, bearing):
     bearing_1 = np.arctan2(b1[1]-state[1], b1[0]-state[0]) - state[2]
     bearing_1 = norm_radians(bearing_1)
 
-    print(f"psi1 {bearing_1}")
-
     bearing_2 = np.arctan2(b2[1]-state[1], b2[0]-state[0]) - state[2]
     bearing_2 = norm_radians(bearing_2)
-    
-    print(f"psi2 {bearing_2}")
-    
     
     err_bear_1 = abs(bearing - bearing_1)
     err_bear_2 = abs(bearing - bearing_2)
