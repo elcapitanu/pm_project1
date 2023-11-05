@@ -67,9 +67,14 @@ def getBeacon(state, b1, b2, distance, bearing):
     bearing_1 = np.arctan2(b1[1]-state[1], b1[0]-state[0]) - state[2]
     bearing_1 = norm_radians(bearing_1)
 
+    print(f"psi1 {bearing_1}")
+
     bearing_2 = np.arctan2(b2[1]-state[1], b2[0]-state[0]) - state[2]
     bearing_2 = norm_radians(bearing_2)
-
+    
+    print(f"psi2 {bearing_2}")
+    
+    
     err_bear_1 = abs(bearing - bearing_1)
     err_bear_2 = abs(bearing - bearing_2)
 
@@ -81,7 +86,7 @@ def getBeacon(state, b1, b2, distance, bearing):
 
     if dst_1 < dst_2 :
         # check if beacon 1 is in sight
-        if abs(err_bear_1) <= abs(err_bear_2) :
+        if err_bear_1 <= err_bear_2 :
             print(f"[{iter}] is b1")
             return b1
         # it must be reading from beacon  2 then
@@ -91,7 +96,7 @@ def getBeacon(state, b1, b2, distance, bearing):
 
     if dst_2 < dst_1 :
         # check if beacon 2 is in sight
-        if abs(err_bear_2) <= abs(err_bear_1) :
+        if err_bear_2 <= err_bear_1 :
             print(f"[{iter}] is b2")
             return b2
         # it must be reading from beacon  1 then
