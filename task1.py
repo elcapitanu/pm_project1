@@ -25,6 +25,7 @@ def kf_update(X, P, Y, H, R):
     return X, P
 
 #video
+vid = False
 output_file = './videos/task1.avi'
 frame_rate = 120
 frame_width = 1920
@@ -113,9 +114,11 @@ for i in range(len(df)):
     x2_pred.append(l2[0] + r2 * np.sin(phi2))
     y2_pred.append(l2[1] - r2 * np.cos(phi2))
 
-    out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
+    if vid:
+        out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
 
-video.export(out)
+if vid:
+    video.export(out)
 
 # plt.scatter(df[:,0], x_pred, marker='o', color='red', label='x_pred')
 # plt.scatter(df[:,0], df[:, 1], marker='o', color='blue', label='x_real')
