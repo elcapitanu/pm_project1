@@ -76,11 +76,7 @@ for i in range(len(df)):
     r2 = df[i,8]
     psi2 = df[i,9]
 
-    # kalman filter predict
-    # state[0] = state[0] + v * np.cos(state[2]) * dt
-    # state[1] = state[1] + v * np.sin(state[2]) * dt
-    # state[2] = data.normalize_rad(state[2] + w * dt)
-    
+    # kalman filter predict    
     B = np.array([[dt * np.cos(state[2]), 0],
                   [dt * np.sin(state[2]), 0],
                   [0, dt]])
@@ -96,16 +92,12 @@ for i in range(len(df)):
     theta_pred.append(state[2])
 
     # kalman filter update
-
-    # state, P = kf.update(state, P, Y, H, R)
-
-    phi1 = data.normalize_rad(psi1+state[2]-np.pi)
-    phi2 = data.normalize_rad(psi2+state[2]-np.pi)
-
-    Z = np.array([l1[0] + r1 * np.cos(phi1), l1[1] + r1 * np.sin(phi1), state[2]])
+    phi = data.normalize_rad(psi1+state[2]-np.pi)
+    Z = np.array([l1[0] + r1 * np.cos(phi), l1[1] + r1 * np.sin(phi), state[2]])
     state, P = kf.update(state, P, Z, H, R)
 
-    Z = np.array([l2[0] + r2 * np.cos(phi2), l2[1] + r2 * np.sin(phi2), state[2]])
+    phi = data.normalize_rad(psi2+state[2]-np.pi)
+    Z = np.array([l2[0] + r2 * np.cos(phi), l2[1] + r2 * np.sin(phi), state[2]])
     state, P = kf.update(state, P, Z, H, R)
 
     if vid:
