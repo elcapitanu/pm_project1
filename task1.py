@@ -48,8 +48,8 @@ y2_pred = []
 state = np.array([x0, y0, theta0])
 
 A = np.array([[1, 0, 0],
-                  [0, 1, 0],
-                  [0, 0, 1]])
+              [0, 1, 0],
+              [0, 0, 1]])
 
 P = np.array([[sigma_v**2,  0,          0],
               [0,           sigma_v**2, 0],
@@ -89,8 +89,6 @@ for i in range(len(df)):
 
     state, P = kf.predict(state, A, B, U, P, Q)
 
-    print(P)
-
     state[2] = data.normalize_rad(state[2])
 
     x_pred.append(state[0])
@@ -104,11 +102,11 @@ for i in range(len(df)):
     phi1 = data.normalize_rad(psi1+state[2]-np.pi)
     phi2 = data.normalize_rad(psi2+state[2]-np.pi)
 
-    x1_pred.append(l1[0] + r1 * np.cos(phi1))
-    y1_pred.append(l1[1] + r1 * np.sin(phi1))
+    Z = np.array([l1[0] + r1 * np.cos(phi1), l1[1] + r1 * np.sin(phi1), state[2]])
+    state, P = kf.update(state, P, Z, H, R)
 
-    x2_pred.append(l2[0] + r2 * np.cos(phi2))
-    y2_pred.append(l2[1] + r2 * np.sin(phi2))
+    Z = np.array([l2[0] + r2 * np.cos(phi2), l2[1] + r2 * np.sin(phi2), state[2]])
+    state, P = kf.update(state, P, Z, H, R)
 
     if vid:
         out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
@@ -122,7 +120,5 @@ data.show_comparasion(df[:, 0], theta_real, theta_pred)
 
 plt.scatter(x_real, y_real, marker='.', color='red', label='real')
 plt.scatter(x_pred, y_pred, marker='.', color='blue', label='pred')
-plt.scatter(x1_pred, y1_pred, marker='.', color='cyan', label='with beacon 1')
-plt.scatter(x2_pred, y2_pred, marker='.', color='green', label='with beacon 2')
 plt.legend()
 plt.show()
