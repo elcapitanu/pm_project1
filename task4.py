@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.linalg import inv
 import matplotlib.pyplot as plt
 
 from utils import video
@@ -10,14 +9,14 @@ def mark_beacon():
     return
 
 #video
-vid = False
-output_file = './videos/task1.avi'
+vid = True
+output_file = './videos/task4.avi'
 frame_rate = 120
 frame_width = 1920
 frame_height = 1080
 out = video.init(output_file, frame_rate, frame_width, frame_height)
 #data
-file_path = "./data/data1.txt"
+file_path = "./data/data4.txt"
 df = data.extract(file_path)
 
 x_real = df[:, 1]
@@ -54,41 +53,33 @@ A = np.array([[1, 0, 0],
               [0, 1, 0],
               [0, 0, 1]])
 
-P = np.array([[sigma_v**2,  0,          0],
-              [0,           sigma_v**2, 0],
-              [0,           0,          sigma_w**2]])
+P = np.eye(3)
 
-Q = np.array([[sigma_v**2,  0,          0],
-              [0,           sigma_v**2, 0],
-              [0,           0,          sigma_w**2]])
+# Q = np.array([[sigma_v**2, 0],
+#               [0,          sigma_w**2]])
 
-H = np.array([[1, 0, 0],
-              [0, 1, 0],
-              [0, 0, 0]])
+Q = np.array([[sigma_v**2, 0,          0],
+              [0,          sigma_v**2, 0],
+              [0,          0,          sigma_w**2]])
 
-R = np.array([[sigma_r**2,  0,              0],
-              [0,           sigma_psi**2,   0],
-              [0,           0,              0]])
+R = np.array([[sigma_r**2, 0],
+              [0,          sigma_psi**2]])
 
 for i in range(len(df)):
     t = df[i,0]
     v = df[i,4]
     w = df[i,5]
-    r1 = df[i,6]
-    psi1 = df[i,7]
-    r2 = df[i,8]
-    psi2 = df[i,9]
+    r = df[i,6]
+    psi = df[i,7]
 
     # kalman filter predict    
     B = np.array([[dt * np.cos(state[2]), 0],
                   [dt * np.sin(state[2]), 0],
-                  [0, dt]])
+                  [0,                     dt]])
     
     U = np.array([v, w])
 
-    state, P = kf.predict(state, A, B, U, P, Q)
-
-    state[2] = data.normalize_rad(state[2])
+    state, P = kf.predict(state, A, B, U, P, Q, dt)
 
     x_pred.append(state[0])
     y_pred.append(state[1])
@@ -97,7 +88,7 @@ for i in range(len(df)):
     mark_beacon()
 
     if vid:
-        out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
+        out = video.update(out, t, frame_width, frame_height, state, np.array([df[i,1],df[i,2],df[i,3]]), True, False)
 
 if vid:
     video.export(out)
