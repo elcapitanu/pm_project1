@@ -5,13 +5,6 @@ import matplotlib.pyplot as plt
 from utils import video
 from utils import data
 
-def normalize_rad(r):
-    if r > np.pi:
-        r -= 2 * np.pi
-    elif r < -np.pi:
-        r += 2 * np.pi
-    return r
-
 def kf_predict(X, P, A, Q):
     X = A @ X
     P = A @ P @ A.T + Q
@@ -90,7 +83,7 @@ for i in range(len(df)):
     psi2 = df[i,9]
 
     # kalman filter predict
-    state[2] = normalize_rad(state[2] + w * dt)
+    state[2] = data.normalize_rad(state[2] + w * dt)
 
     state[0] = state[0] + v * np.cos(state[2]) * dt
     state[1] = state[1] + v * np.sin(state[2]) * dt
@@ -105,14 +98,14 @@ for i in range(len(df)):
 
     # state, P = kf_update(state, P, Y, H, R)
 
-    phi1 = normalize_rad(psi1+state[2]-np.pi/2)
-    phi2 = normalize_rad(psi2+state[2]-np.pi/2)
+    phi1 = data.normalize_rad(psi1+state[2]-np.pi)
+    phi2 = data.normalize_rad(psi2+state[2]-np.pi)
 
-    x1_pred.append(l1[0] + r1 * np.sin(phi1))
-    y1_pred.append(l1[1] - r1 * np.cos(phi1))
+    x1_pred.append(l1[0] + r1 * np.cos(phi1))
+    y1_pred.append(l1[1] + r1 * np.sin(phi1))
 
-    x2_pred.append(l2[0] + r2 * np.sin(phi2))
-    y2_pred.append(l2[1] - r2 * np.cos(phi2))
+    x2_pred.append(l2[0] + r2 * np.cos(phi2))
+    y2_pred.append(l2[1] + r2 * np.sin(phi2))
 
     if vid:
         out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
@@ -120,20 +113,13 @@ for i in range(len(df)):
 if vid:
     video.export(out)
 
-# plt.scatter(df[:,0], x_pred, marker='o', color='red', label='x_pred')
-# plt.scatter(df[:,0], df[:, 1], marker='o', color='blue', label='x_real')
-# plt.show()
+data.show_comparasion(df[:, 0], x_real, x_pred)
+data.show_comparasion(df[:, 0], y_real, y_pred)
+data.show_comparasion(df[:, 0], theta_real, theta_pred)
 
-# plt.scatter(df[:,0], y_pred, marker='o', color='red', label='y_pred')
-# plt.scatter(df[:,0], df[:, 2], marker='o', color='blue', label='y_real')
-# plt.show()
-
-# plt.scatter(df[:,0], theta_pred, marker='o', color='red', label='theta_pred')
-# plt.scatter(df[:,0], df[:, 3], marker='o', color='blue', label='theta_real')
-# plt.show()
-
-# plt.scatter(x_pred, y_pred, marker='.', color='red', label='pred')
-# plt.scatter(df[:,1], df[:, 2], marker='.', color='blue', label='real')
-# # plt.scatter(x1_pred, y1_pred, marker='.', color='cyan', label='pred1')
-# # plt.scatter(x2_pred, y2_pred, marker='.', color='green', label='pred2')
-# plt.show()
+plt.scatter(x_real, y_real, marker='.', color='red', label='real')
+plt.scatter(x_pred, y_pred, marker='.', color='blue', label='pred')
+plt.scatter(x1_pred, y1_pred, marker='.', color='cyan', label='with beacon 1')
+plt.scatter(x2_pred, y2_pred, marker='.', color='green', label='with beacon 2')
+plt.legend()
+plt.show()
