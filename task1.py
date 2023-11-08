@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.linalg import inv
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
 
 from utils import video
@@ -7,7 +8,7 @@ from utils import data
 from utils import kf
 
 #video
-vid = False
+vid = True
 output_file = './videos/task1.avi'
 frame_rate = 120
 frame_width = 1920
@@ -38,34 +39,23 @@ x_pred = []
 y_pred = []
 theta_pred = []
 
-x1_pred = []
-y1_pred = []
-
-x2_pred = []
-y2_pred = []
-
-
 state = np.array([x0, y0, theta0])
 
 A = np.array([[1, 0, 0],
               [0, 1, 0],
               [0, 0, 1]])
 
-P = np.array([[sigma_v**2,  0,          0],
-              [0,           sigma_v**2, 0],
-              [0,           0,          sigma_w**2]])
+P = np.eye(3)
 
-Q = np.array([[sigma_v**2,  0,          0],
-              [0,           sigma_v**2, 0],
-              [0,           0,          sigma_w**2]])
+# Q = np.array([[sigma_v**2, 0],
+#               [0,          sigma_w**2]])
 
-H = np.array([[1, 0, 0],
-              [0, 1, 0],
-              [0, 0, 0]])
+Q = np.array([[sigma_v**2, 0,          0],
+              [0,          sigma_v**2, 0],
+              [0,          0,          sigma_w**2]])
 
-R = np.array([[sigma_r**2,  0,              0],
-              [0,           sigma_psi**2,   0],
-              [0,           0,              0]])
+R = np.array([[sigma_r**2, 0],
+              [0,          sigma_psi**2]])
 
 for i in range(len(df)):
     t = df[i,0]
@@ -76,32 +66,28 @@ for i in range(len(df)):
     r2 = df[i,8]
     psi2 = df[i,9]
 
-    # kalman filter predict    
+    # kalman filter predict
     B = np.array([[dt * np.cos(state[2]), 0],
                   [dt * np.sin(state[2]), 0],
-                  [0, dt]])
+                  [0,                     dt]])
     
     U = np.array([v, w])
 
-    state, P = kf.predict(state, A, B, U, P, Q)
+    state, P = kf.predict(state, A, B, U, P, Q, dt)
 
-    state[2] = data.normalize_rad(state[2])
+    # kalman filter update
+    Z = np.array([r1, psi1])
+    state, P = kf.update(state, Z, P, R, l1)
+
+    Z = np.array([r2, psi2])
+    state, P = kf.update(state, Z, P, R, l2)
 
     x_pred.append(state[0])
     y_pred.append(state[1])
     theta_pred.append(state[2])
 
-    # kalman filter update
-    phi = data.normalize_rad(psi1+state[2]-np.pi)
-    Z = np.array([l1[0] + r1 * np.cos(phi), l1[1] + r1 * np.sin(phi), state[2]])
-    state, P = kf.update(state, P, Z, H, R)
-
-    phi = data.normalize_rad(psi2+state[2]-np.pi)
-    Z = np.array([l2[0] + r2 * np.cos(phi), l2[1] + r2 * np.sin(phi), state[2]])
-    state, P = kf.update(state, P, Z, H, R)
-
     if vid:
-        out = video.update(out, frame_width, frame_height, df[i,1], df[i,2], df[i,3])
+        out = video.update(out, t, frame_width, frame_height, state, np.array([df[i,1],df[i,2],df[i,3]]))
 
 if vid:
     video.export(out)
