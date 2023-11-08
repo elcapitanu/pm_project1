@@ -4,18 +4,7 @@ import matplotlib.pyplot as plt
 
 from utils import video
 from utils import data
-
-def kf_predict(X, P, A, Q):
-    X = A @ X
-    P = A @ P @ A.T + Q
-    return X, P
-
-def kf_update(X, P, Y, H, R):
-    IS = H @ P @ H.T + R
-    K = P @ H.T @ inv(IS)
-    X = X + K @ (Y- H @ X)
-    P = P - K @ IS @ K.T
-    return X, P
+from utils import kf
 
 #video
 vid = False
@@ -55,11 +44,16 @@ y1_pred = []
 x2_pred = []
 y2_pred = []
 
+
 state = np.array([x0, y0, theta0])
 
-A = np.eye(3)
+A = np.array([[1, 0, 0],
+                  [0, 1, 0],
+                  [0, 0, 1]])
 
-P = np.eye(3)
+P = np.array([[sigma_v**2,  0,          0],
+              [0,           sigma_v**2, 0],
+              [0,           0,          sigma_w**2]])
 
 Q = np.array([[sigma_v**2,  0,          0],
               [0,           sigma_v**2, 0],
@@ -83,12 +77,21 @@ for i in range(len(df)):
     psi2 = df[i,9]
 
     # kalman filter predict
-    state[2] = data.normalize_rad(state[2] + w * dt)
+    # state[0] = state[0] + v * np.cos(state[2]) * dt
+    # state[1] = state[1] + v * np.sin(state[2]) * dt
+    # state[2] = data.normalize_rad(state[2] + w * dt)
+    
+    B = np.array([[dt * np.cos(state[2]), 0],
+                  [dt * np.sin(state[2]), 0],
+                  [0, dt]])
+    
+    U = np.array([v, w])
 
-    state[0] = state[0] + v * np.cos(state[2]) * dt
-    state[1] = state[1] + v * np.sin(state[2]) * dt
+    state, P = kf.predict(state, A, B, U, P, Q)
 
-    # state, P = kf_predict(state, P, A, Q)
+    print(P)
+
+    state[2] = data.normalize_rad(state[2])
 
     x_pred.append(state[0])
     y_pred.append(state[1])
@@ -96,7 +99,7 @@ for i in range(len(df)):
 
     # kalman filter update
 
-    # state, P = kf_update(state, P, Y, H, R)
+    # state, P = kf.update(state, P, Y, H, R)
 
     phi1 = data.normalize_rad(psi1+state[2]-np.pi)
     phi2 = data.normalize_rad(psi2+state[2]-np.pi)
