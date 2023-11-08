@@ -1,6 +1,4 @@
 import numpy as np
-from numpy.linalg import inv
-from numpy.linalg import norm
 import matplotlib.pyplot as plt
 
 from utils import video
