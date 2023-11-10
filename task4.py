@@ -9,7 +9,7 @@ def mark_beacon():
     return
 
 #video
-vid = True
+vid = False
 output_file = './videos/task4.avi'
 frame_rate = 120
 frame_width = 1920
@@ -24,17 +24,11 @@ y_real = df[:, 2]
 theta_real = df[:, 3]
 dt = df[1,0]
 
-x0 = x_real[0]
-y0 = y_real[0]
-theta0 = theta_real[0]
-
 sigma_v = 0.5
 sigma_w = 0.05
 
 sigma_r = 0.5
 sigma_psi = 0.1
-l1 = [0,0]
-l2 = [10,0]
 
 x_pred = []
 y_pred = []
@@ -46,8 +40,7 @@ y1_pred = []
 x2_pred = []
 y2_pred = []
 
-
-state = np.array([x0, y0, theta0])
+state = np.array([0, 0, 0])
 
 A = np.array([[1, 0, 0],
               [0, 1, 0],
