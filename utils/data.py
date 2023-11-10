@@ -19,7 +19,7 @@ def normalize_rad(r):
     return r
 
 def show_comparasion(t, real, pred):
-    plt.scatter(t, real, marker='o', color='red', label='real')
-    plt.scatter(t, pred, marker='o', color='blue', label='pred')
+    plt.scatter(t, real, marker='o', color='blue', label='real')
+    plt.scatter(t, pred, marker='o', color='red', label='pred')
     plt.legend()
     plt.show()
