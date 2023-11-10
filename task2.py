@@ -43,14 +43,12 @@ A = np.array([[1, 0, 0],
               [0, 1, 0],
               [0, 0, 1]])
 
-P = np.eye(3)
+P = np.array([[1, 1, 1],
+              [1, 1, 1],
+              [1, 1, 1]])
 
-# Q = np.array([[sigma_v**2, 0],
-#               [0,          sigma_w**2]])
-
-Q = np.array([[sigma_v**2, 0,          0],
-              [0,          sigma_v**2, 0],
-              [0,          0,          sigma_w**2]])
+Q = np.array([[sigma_v**2, 0],
+              [0,          sigma_w**2]])
 
 R = np.array([[sigma_r**2, 0],
               [0,          sigma_psi**2]])
@@ -74,11 +72,11 @@ for i in range(len(df)):
     state, P = kf.predict(state, A, B, U, P, Q, dt)
 
     # kalman filter update
-    if (r1 > 0 and psi1 > 0):
+    if (r1 != 0 and abs(psi1) <= np.pi/4):
         Z = np.array([r1, psi1])
         state, P = kf.update(state, Z, P, R, l1)
 
-    if (r2 > 0 and psi2 > 0):
+    if (r2 != 0 and abs(psi2) <= np.pi/4):
         Z = np.array([r2, psi2])
         state, P = kf.update(state, Z, P, R, l2)
 
