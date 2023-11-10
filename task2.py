@@ -6,7 +6,7 @@ from utils import data
 from utils import kf
 
 #video
-vid = True
+vid = False
 output_file = './videos/task2.avi'
 frame_rate = 120
 frame_width = 1920
@@ -72,11 +72,11 @@ for i in range(len(df)):
     state, P = kf.predict(state, A, B, U, P, Q, dt)
 
     # kalman filter update
-    if (r1 != 0 and abs(psi1) <= np.pi/4):
+    if (r1 != 0):
         Z = np.array([r1, psi1])
         state, P = kf.update(state, Z, P, R, l1)
 
-    if (r2 != 0 and abs(psi2) <= np.pi/4):
+    if (r2 != 0):
         Z = np.array([r2, psi2])
         state, P = kf.update(state, Z, P, R, l2)
 
