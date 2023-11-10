@@ -1,4 +1,4 @@
-from doctest import FAIL_FAST
+from numpy.linalg import inv
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -6,7 +6,7 @@ from utils import video
 from utils import data
 
 #video
-vid = False
+vid = True
 output_file = './videos/task4.avi'
 frame_rate = 120
 frame_width = 1920
@@ -37,9 +37,11 @@ y1_pred = []
 x2_pred = []
 y2_pred = []
 
-state = np.array([[0], [0], [0]])
+state = np.array([[x_real[0]],
+                  [y_real[0]],
+                  [theta_real[0]]])
 
-P = np.eye(3)
+P = np.eye(3) * 999
 
 Q = np.array([[sigma_v**2, 0],
               [0,          sigma_w**2]])
@@ -47,15 +49,17 @@ Q = np.array([[sigma_v**2, 0],
 R = np.array([[sigma_r**2, 0],
               [0,          sigma_psi**2]])
 
-from numpy.linalg import inv
-
 
 # save beacons [x, y, n] n times viewed
 known_beacons = []
-def new_beacon(state, r, psi):
-    
+def get_beacon(state, r, psi):
+
+    x, y, theta = state[:3].reshape(3)
+    bx = x + r*np.cos(theta + psi)
+    by = y + r*np.sin(theta + psi)
+
     if len(state) <= 3:
-        return True
+        return True, [bx, by]
 
     x, y, theta = state[:3].reshape(3)
     bx = x + r*np.cos(theta + psi)
@@ -69,10 +73,10 @@ def new_beacon(state, r, psi):
             beacon[1] = (beacon[1] * n + by)/(n+1)
             beacon[2] = n+1
             known_beacons[i] = beacon
-            return False
+            return False, [beacon[0], beacon[1]]
 
     known_beacons.append([bx, by, 1])
-    return True
+    return True, [bx, by]
 
 def predict(X, U, P, Q, dt):
     x, y, theta = X[:3].reshape(3)
@@ -99,6 +103,23 @@ def predict(X, U, P, Q, dt):
     return X_pred, P
 
 
+def step(state, range, psi, beacon):
+
+    x, y, theta = state[:3].reshape(3)
+    z = np.array([[range, psi]])
+
+    norm = np.sqrt((x-beacon[0])**2 + (y-beacon[1])**2)
+
+    H = np.array([[(x-beacon[0])/norm,      (y-beacon[1])/norm,     0],
+                  [-(y-beacon[1])/(norm**2),(x-beacon[0])/(norm**2),-1]])
+
+    h = np.array([[norm,
+                   np.arctan2(beacon[1]-y, beacon[0]-x)-theta]])
+
+    delta = (z-h).reshape(2, 1)
+
+    return delta, R, H
+
 for i in range(len(df)):
     t = df[i,0]
     v = df[i,4]
@@ -106,24 +127,36 @@ for i in range(len(df)):
     r = df[i,6]
     psi = df[i,7]
 
-    if new_beacon(state, r, psi) :
-        state = np.vstack((state, [[r], [psi]]))
-
     U = np.array([[v], [w]])
 
-    state, P = predict(state, U, P, Q, dt)
+    if (r != 0) and (psi <= np.pi/4): 
+        new, beacon = get_beacon(state, r, psi)
+        if new :
+            state = np.vstack((state, [[r], [psi]]))
+
+        state, P = predict(state, U, P, Q, dt)
+        delta, R, H = step(state, r, psi, beacon)
+
+        K = P @ H.T @ inv(H @ P @ H.T + R)
+        P = P - K @ (H @ P @ H.T + R) @ K.T
+
+        state[:3] = state[:3] + K @ delta
+
+    # no beacon
+    else:
+        state, P = predict(state, U, P, Q, dt)
 
     x_pred.append(state[0, 0])
     y_pred.append(state[1, 0])
     theta_pred.append(state[2, 0])
 
     if vid:
-        out = video.update(out, t, frame_width, frame_height, state, np.array([df[i,1],df[i,2],df[i,3]]), True, False)
+        out = video.update_2(out, t, frame_width, frame_height, state, np.array([df[i,1],df[i,2],df[i,3]]), True, True, known_beacons)
 
 if vid:
     video.export(out)
 
-exit()
+print(known_beacons)
 
 data.show_comparasion(df[:, 0], x_real, x_pred)
 data.show_comparasion(df[:, 0], y_real, y_pred)
