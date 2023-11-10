@@ -6,7 +6,7 @@ from utils import data
 from utils import kf
 
 #video
-vid = False
+vid = True
 output_file = './videos/task1.avi'
 frame_rate = 120
 frame_width = 1920

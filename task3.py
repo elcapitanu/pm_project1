@@ -32,7 +32,7 @@ def choose_landmark(state):
     return 0
 
 #video
-vid = False
+vid = True
 output_file = './videos/task3.avi'
 frame_rate = 120
 frame_width = 1920

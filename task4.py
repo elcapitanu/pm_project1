@@ -37,7 +37,7 @@ def get_landmark(landmarks, all_landmarks, new_landmark):
     return landmarks, all_landmarks, n_landmark
 
 #video
-vid = False
+vid = True
 output_file = './videos/task4.avi'
 frame_rate = 120
 frame_width = 1920
