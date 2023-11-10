@@ -32,7 +32,7 @@ def choose_landmark(state):
     return 0
 
 #video
-vid = True
+vid = False
 output_file = './videos/task3.avi'
 frame_rate = 120
 frame_width = 1920
@@ -94,7 +94,7 @@ for i in range(len(df)):
     state, P = kf.predict(state, A, B, U, P, Q, dt)
 
     # kalman filter update
-    if (r != 0 and abs(psi) <= np.pi):
+    if (r != 0):
         Z = np.array([r, psi])
         landmark = choose_landmark(state)
         if (landmark):
