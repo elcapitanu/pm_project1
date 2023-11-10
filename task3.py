@@ -63,10 +63,6 @@ theta_pred = []
 
 state = np.array([x0, y0, theta0])
 
-A = np.array([[1, 0, 0],
-              [0, 1, 0],
-              [0, 0, 1]])
-
 P = np.array([[1, 1, 1],
               [1, 1, 1],
               [1, 1, 1]])
@@ -84,14 +80,8 @@ for i in range(len(df)):
     r = df[i,6]
     psi = df[i,7]
 
-    # kalman filter predict    
-    B = np.array([[dt * np.cos(state[2]), 0],
-                  [dt * np.sin(state[2]), 0],
-                  [0,                     dt]])
-    
-    U = np.array([v, w])
-    
-    state, P = kf.predict(state, A, B, U, P, Q, dt)
+    # kalman filter predict      
+    state, P = kf.predict(state, np.array([v, w]), P, Q, dt)
 
     # kalman filter update
     if (r != 0):
@@ -114,7 +104,7 @@ data.show_comparasion(df[:, 0], x_real, x_pred)
 data.show_comparasion(df[:, 0], y_real, y_pred)
 data.show_comparasion(df[:, 0], theta_real, theta_pred)
 
-plt.scatter(x_real, y_real, marker='.', color='red', label='real')
-plt.scatter(x_pred, y_pred, marker='.', color='blue', label='pred')
+plt.scatter(x_real, y_real, marker='.', color='blue', label='real')
+plt.scatter(x_pred, y_pred, marker='.', color='red', label='pred')
 plt.legend()
 plt.show()
