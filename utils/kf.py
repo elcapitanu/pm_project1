@@ -3,11 +3,12 @@ from numpy.linalg import inv
 
 from utils import data
 
-def predict(X, A, B, U, P, Q, dt):
+def predict(X, U, P, Q, dt):
     theta = X[2]
     
-    X = A @ X + B @ U
-    X[2] = data.normalize_rad(X[2])
+    X[2] = data.normalize_rad(X[2] + U[1] * dt)
+    X[0] = X[0] + U[0]/U[1] * ( np.sin(X[2]) - np.sin(theta))
+    X[1] = X[1] + U[0]/U[1] * (-np.cos(X[2]) + np.cos(theta))
 
     F_x = np.array([[1, 0, U[0]/U[1] * (np.cos(X[2]) - np.cos(theta))],
                     [0, 1, U[0]/U[1] * (np.sin(X[2]) - np.sin(theta))],
