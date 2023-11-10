@@ -52,6 +52,8 @@ R = np.array([[sigma_r**2, 0],
 
 # save beacons [x, y, n] n times viewed
 known_beacons = []
+saved_beacons = []
+#!!!!!
 def get_beacon(state, r, psi):
 
     x, y, theta = state[:3].reshape(3)
@@ -59,7 +61,8 @@ def get_beacon(state, r, psi):
     by = y + r*np.sin(theta + psi)
 
     if len(state) <= 3:
-        return True, [bx, by]
+        known_beacons.append([bx, by, 1])
+        return True, [bx, by, 0]
 
     x, y, theta = state[:3].reshape(3)
     bx = x + r*np.cos(theta + psi)
@@ -67,16 +70,18 @@ def get_beacon(state, r, psi):
 
     for i, beacon in enumerate(known_beacons):
         dst = np.sqrt((beacon[0] - bx)** 2 + (beacon[1] - by)** 2)
-        if dst <= 10 :
+        if dst <= 12 :
             n = beacon[2]
             beacon[0] = (beacon[0] * n + bx)/(n+1)
             beacon[1] = (beacon[1] * n + by)/(n+1)
             beacon[2] = n+1
             known_beacons[i] = beacon
-            return False, [beacon[0], beacon[1]]
+            return False, [beacon[0], beacon[1], i]
 
     known_beacons.append([bx, by, 1])
-    return True, [bx, by]
+    id = len(known_beacons) - 1
+    print(id)
+    return True, [bx, by, id]
 
 def predict(X, U, P, Q, dt):
     x, y, theta = X[:3].reshape(3)
@@ -94,7 +99,23 @@ def predict(X, U, P, Q, dt):
                     [(np.cos(theta) - np.cos(theta_pred))/omega, v/(omega**2) * (np.cos(theta_pred) + dt*omega*np.sin(theta_pred) - np.cos(theta))],
                     [0, dt]])
 
-    P = F_x @ P @ F_x.T + F_u @ Q @ F_u.T
+    Fx = np.eye(len(X), len(X))
+    for line in range(F_x.shape[0]):
+        for column in range(F_x.shape[0]):
+            Fx[line][column] = F_x[line][column]
+
+    Fu = np.zeros((len(X), 2))
+    for line in range(F_u.shape[0]):
+        for column in range(F_u.shape[1]):
+            Fu[line][column] = F_u[line][column]
+
+    tmp = np.eye(len(X), len(X)) * 10
+    for line in range(P.shape[0]):
+        for column in range(P.shape[1]):
+            tmp[line][column] = P[line][column]
+    P = tmp
+
+    P = Fx @ P @ Fx.T + Fu @ Q @ Fu.T
 
     X_pred = X
     X_pred[0,0] = x_pred
@@ -103,15 +124,25 @@ def predict(X, U, P, Q, dt):
     return X_pred, P
 
 
-def step(state, range, psi, beacon):
+def step(state, r, psi, beacon):
 
     x, y, theta = state[:3].reshape(3)
-    z = np.array([[range, psi]])
+    z = np.array([[r, psi]])
 
     norm = np.sqrt((x-beacon[0])**2 + (y-beacon[1])**2)
 
-    H = np.array([[(x-beacon[0])/norm,      (y-beacon[1])/norm,     0],
+    H_1 = np.array([[(x-beacon[0])/norm,      (y-beacon[1])/norm,     0],
                   [-(y-beacon[1])/(norm**2),(x-beacon[0])/(norm**2),-1]])
+
+
+    H = np.zeros((2, len(state)))
+
+    for line in range(H_1.shape[0]):
+      for column in range(H_1.shape[1]):
+        H[line][column] = H_1[line][column]
+    H[0, 3+2*beacon[2]] = 1
+    H[1, 3+2*beacon[2]+1] = 1
+
 
     h = np.array([[norm,
                    np.arctan2(beacon[1]-y, beacon[0]-x)-theta]])
@@ -140,7 +171,7 @@ for i in range(len(df)):
         K = P @ H.T @ inv(H @ P @ H.T + R)
         P = P - K @ (H @ P @ H.T + R) @ K.T
 
-        state[:3] = state[:3] + K @ delta
+        state = state + K @ delta
 
     # no beacon
     else:
