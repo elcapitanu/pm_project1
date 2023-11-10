@@ -53,14 +53,12 @@ A = np.array([[1, 0, 0],
               [0, 1, 0],
               [0, 0, 1]])
 
-P = np.eye(3)
+P = np.array([[1, 1, 1],
+              [1, 1, 1],
+              [1, 1, 1]])
 
-# Q = np.array([[sigma_v**2, 0],
-#               [0,          sigma_w**2]])
-
-Q = np.array([[sigma_v**2, 0,          0],
-              [0,          sigma_v**2, 0],
-              [0,          0,          sigma_w**2]])
+Q = np.array([[sigma_v**2, 0],
+              [0,          sigma_w**2]])
 
 R = np.array([[sigma_r**2, 0],
               [0,          sigma_psi**2]])
